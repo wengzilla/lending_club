@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 
 
+def setup_df(df):
+    df['total_recovered'] = df['total_pymnt'] + df['recoveries'] - df['collection_recovery_fee']
+    df['proportion_recovered'] = df['total_recovered']/df['funded_amnt']
+
 def plot_categorical(category, df):
     grouped = df.groupby(category)
     num_groups = len(grouped.groups.keys())
@@ -14,12 +18,11 @@ def plot_categorical(category, df):
     plt.show()
 
 def import_data(year):
-    fname = 'LoanStats%d.csv' %year
+    fname = '../LoanStats%d.csv' %year
     df = pd.read_csv(fname, skiprows=1, nrows=10000) 
     return df
 
 if __name__ == '__main__':
     df = import_data(2015)
-    df['total_recovered'] = df['total_pymnt'] + df['recoveries'] - df['collection_recovery_fee']
-    df['proportion_recovered'] = df['total_recovered']/df['funded_amnt']
+    setup_df(df)
     plot_categorical('loan_status', df)
