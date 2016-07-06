@@ -11,7 +11,6 @@ def gen_categorical(category, df, max_categories=10, quantile=False):
         bucket_size = (max_val - min_val) / max_categories
         buckets = [min_val + i*bucket_size for i in range(1, max_categories)]
     else:
-        percentiles = np.arange(0, 1, max_categories)
-        buckets = np.percentiles(df[category], percentiles)
-
+        percentiles = np.arange(0, 1, 1.0/max_categories)
+        buckets = np.percentile(df[category], percentiles)
     return df[category].apply(lambda x: bisect.bisect_left(buckets, x))
