@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import bisect
 
+# Takes a continuous feature and turns it into a categorical feature
+# by bucketing values based on quantile or range.
 def gen_categorical(category, df, max_categories=10, quantile=False):
     max_val = df[category].max()
     min_val = df[category].min()
@@ -15,11 +17,23 @@ def gen_categorical(category, df, max_categories=10, quantile=False):
         buckets = np.percentile(df[category], percentiles)
     return df[category].apply(lambda x: bisect.bisect_left(buckets, x))
 
+# Adds a binary feature for each category of a categorical feature
+def binarize_category(category, df, drop_category=False):
+    grouped = df.groupby(category)
+    groups = grouped.groups.key()
+
+    for g in groups:
+        cat_name = category + '_' + g
+        df[cat_name] = (df[category] == g).astype(int)
+
+    if drop_category:
+       df.drop(category, axis=1, inplace=True)
+
 def normalize_column(category, df, inplace=False):
     mean = np.nanmean(df[category])
     col_max = np.max(df[category])
     col_min = np.min(df[category])
-    normed = df[category].apply(lambda x: x if pd.isnan(x) else (x - mean)/(col_max-col_min), axis=1)
+    normed = df[category].apply(lambda x: x if pd.isnan(x) else (x - mean)/(col_max-col_min))
 
     if inplace:
         df[category] = normed
