@@ -20,7 +20,7 @@ def gen_categorical(category, df, max_categories=10, quantile=False):
 # Adds a binary feature for each category of a categorical feature
 def binarize_category(category, df, drop_category=False):
     grouped = df.groupby(category)
-    groups = grouped.groups.key()
+    groups = grouped.groups.keys()
 
     for g in groups:
         cat_name = category + '_' + g
@@ -33,7 +33,7 @@ def normalize_column(category, df, inplace=False):
     mean = np.nanmean(df[category])
     col_max = np.max(df[category])
     col_min = np.min(df[category])
-    normed = df[category].apply(lambda x: x if pd.isnan(x) else (x - mean)/(col_max-col_min))
+    normed = df[category].apply(lambda x: x if pd.isnull(x) else (x - mean)/(col_max-col_min))
 
     if inplace:
         df[category] = normed
@@ -44,5 +44,7 @@ def sq_loss(true_y, predicted_y):
     return np.sum(np.square(true_y - predicted_y))
 
 def clean_percent(val):
+    if pd.isnull(val):
+        return val
     return float(val[:-1])
 
