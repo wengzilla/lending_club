@@ -53,6 +53,7 @@ def import_data(year, nrows=None):
 
 def get_features():
     features = [
+        'id',
         'loan_amnt',
         'term',
         'int_rate', # percent clean
