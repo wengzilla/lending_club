@@ -47,9 +47,9 @@ def import_data(year, nrows=None):
 
     # Add some useful columns
     # TODO: Do the binarizing here or somewhere else down the line?
-    credit_delta = df_feats['earliest_cr_line'] - df_feats['issue_d']
+    credit_delta =  df_feats['issue_d'] - df_feats['earliest_cr_line']
     df_feats['months_since_fst_credit'] = (credit_delta / np.timedelta64(1, 'M')).astype(int)
-    df_feats['fico'] = (df_feats['fico_range_high'] - df_feats['fico_range_low']) / 2
+    df_feats['fico'] = (df_feats['fico_range_high'] + df_feats['fico_range_low']) / 2
 
     # Some manual memory management
     df_feats.drop(DROP_COLS, axis=1, inplace=True)
