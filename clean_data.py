@@ -14,16 +14,19 @@ TERM = 'term'
 EMP_LENGTH = 'emp_length'
 DATE_COLS = ['issue_d', 'earliest_cr_line']
 DROP_COLS = ['fico_range_high', 'fico_range_low']
+BINARIZE_FEATS = [
 
-def import_all_data():
+]
+
+def import_all_data(nrows):
     dfs = []
     for year in YEAR_MAP.keys():
-        dfs.append(import_data(year))
+        dfs.append(import_data(year, nrows))
 
     return pd.concat(dfs)
 
 def import_data(year, nrows=None):
-    fname = '../LoanStats3%s.csv' %YEAR_MAP[year]
+    fname = 'data/LoanStats3%s.csv' %YEAR_MAP[year]
     df = pd.read_csv(fname, skiprows=1, nrows=nrows)
     df_feats = df[get_features()].copy()
     if year == 2007:
