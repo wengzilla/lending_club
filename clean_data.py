@@ -81,7 +81,7 @@ def get_features():
         'earliest_cr_line', # turn to num months since?
         'inq_last_6mths',
         'chargeoff_within_12_mths', # binarize
-        'loan_status'
+        'loan_status',
         'total_pymnt',
         'collection_recovery_fee'
     ]
