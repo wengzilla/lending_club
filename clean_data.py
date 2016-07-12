@@ -16,33 +16,40 @@ DATE_COLS = ['issue_d', 'earliest_cr_line']
 DROP_COLS = ['fico_range_high', 'fico_range_low']
 
 def import_all_data():
-    pass
+    dfs = []
+    for year in YEAR_MAP.keys():
+        dfs.append(import_data(year))
 
-def import_data(year, nrows=10000):
+    return pd.concat(dfs)
+
+def import_data(year, nrows=None):
     fname = '../LoanStats3%s.csv' %YEAR_MAP[year]
     df = pd.read_csv(fname, skiprows=1, nrows=nrows)
     df_feats = df[get_features()].copy()
     if year == 2007:
         df_feats = df_feats.select(lambda x: x not in EXCLUDE_STATUSES)
 
+    # Deal with n/a values
     df_feats.replace('n/a', np.nan, inplace=True)
+    df_feats['mths_since_last_delinq'].fillna(-1, inplace=True)
+    df_feats['mths_since_last_record'].fillna(-1, inplace=True)
+    df_feats.dropna(axis=0, inplace=True)
+
+    # clean columns
     util.df_clean_percent(df_feats, PERCENT_COLS, True)
     util.df_clean_month(df_feats, TERM, True)
     util.df_clean_emp_length(df_feats, EMP_LENGTH, True)
     for d in DATE_COLS: 
         util.df_clean_date(df_feats, d, True)
 
-    # Fill na
-    df_feats['mths_since_last_delinq'].fillna(-1, inplace=True)
-    df_feats['mths_since_last_record'].fillna(-1, inplace=True)
-
-    # Add columns
+    # Add some useful columns
+    # TODO: Do the binarizing here or somewhere else down the line?
     credit_delta = df_feats['earliest_cr_line'] - df_feats['issue_d']
     df_feats['months_since_fst_credit'] = (credit_delta / np.timedelta64(1, 'M')).astype(int)
     df_feats['fico'] = (df_feats['fico_range_high'] - df_feats['fico_range_low']) / 2
 
+    # Some manual memory management
     df_feats.drop(DROP_COLS, axis=1, inplace=True)
-    df_feats.dropna(axis=0, inplace=True)
     return df_feats
 
 def get_features():
