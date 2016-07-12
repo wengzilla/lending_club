@@ -14,9 +14,6 @@ TERM = 'term'
 EMP_LENGTH = 'emp_length'
 DATE_COLS = ['issue_d', 'earliest_cr_line']
 DROP_COLS = ['fico_range_high', 'fico_range_low']
-BINARIZE_FEATS = [
-
-]
 
 def import_all_data(nrows):
     dfs = []
@@ -29,8 +26,7 @@ def import_data(year, nrows=None):
     fname = 'data/LoanStats3%s.csv' %YEAR_MAP[year]
     df = pd.read_csv(fname, skiprows=1, nrows=nrows)
     df_feats = df[get_features()].copy()
-    if year == 2007:
-        df_feats = df_feats.select(lambda x: x not in EXCLUDE_STATUSES)
+    df_feats = df_feats.select(lambda x: x not in EXCLUDE_STATUSES)
 
     # Deal with n/a values
     df_feats.replace('n/a', np.nan, inplace=True)
@@ -86,6 +82,8 @@ def get_features():
         'inq_last_6mths',
         'chargeoff_within_12_mths', # binarize
         'loan_status'
+        'total_pymnt',
+        'collection_recovery_fee'
     ]
 
     return features
