@@ -125,6 +125,7 @@ def drop_features():
         'mths_since_last_delinq',
         'pub_rec',
         'collection_recovery_fee',
-        'total_pymnt'
+        'total_pymnt',
+        'payout_prop'
     ]
     return to_drop_features
