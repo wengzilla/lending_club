@@ -17,30 +17,25 @@ pd2007 = cd.import_data(2007)
 pd2012 = cd.import_data(2012)
 
 all_data = pd.concat([pd2007, pd2012])
+prepped_data = cd.prep_for_classification(all_data)
+X, y = cd.feature_target_split(prepped_data)
 
-util.df_binarize_column(all_data, 'home_ownership', drop_col=True)
-util.df_binarize_column(all_data, 'purpose', drop_col=True)
-util.df_binarize_column(all_data, 'verification_status', drop_col=True)
-all_data['loan_status'] = (all_data['loan_status'] == 'Fully Paid').astype(int)
+# grades are still here
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+train_payouts = all_data.ix[X_train.index]['payout_prop']
+test_payouts = all_data.ix[X_test.index]['payout_prop']
 
-
-drop_feats = cd.drop_features()
-all_data_dropped_cols = all_data.drop(drop_feats, axis=1)
-X, y = cd.get_X_y(all_data_dropped_cols)
+print "Benchmark for all data on A/B/C: %.2f" %benchmark.total_return(all_data, filter_col='grade', filter_vals=['A', 'B', 'C'])
+print "Benchmar for all data on all loans: %.2f" %benchmark.total_return(all_data)
+print "Benchmark for all data is : %.2f" %np.mean(all_data['payout_prop'])
+print "Benchmark for 2012 data is: %.2f" %np.mean(pd2012['payout_prop'])
+print "Benchmark for 2007 data is: %.2f" %np.mean(pd2007['payout_prop'])
 
 lr_params = {
-    'C': 1,
-    'class_weight': {False: 10},
+    'C': 100,
+    'class_weight': {False: 12},
     'penalty': 'l2',    
 }
 
-X_test, X_train, y_test, y_train = train_test_split(X, y, test_size=0.2, random_state=0)
-models = group_models.fit(X_test, y_test, 'grade', LogisticRegression, lr_params)
-
-print benchmark.total_return(all_data, filter_col='grade', filter_vals=['A', 'B', 'C', 'D', 'E'])
-# X = all_data but then prepped for model
-# create a new dataframe of only the things we chose
-
-indices = group_models.predicted_indices(X, 'grade', models)
-predicted_df = all_data.ix[indices]
-print benchmark.total_return(predicted_df)
+models = group_models.fit(X_train, y_train, 'grade', LogisticRegression, lr_params)
+group_models.group_results(X_test, y_test, test_payouts, 'grade', models)
