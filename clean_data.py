@@ -8,6 +8,9 @@ YEAR_MAP = {2007: 'a', 2012: 'b', 2014: 'c', 2015: 'd', 2016: 'd'}
 EXCLUDE_STATUSES = [
     'Does not meet the credit policy. Status:Charged Off',
     'Does not meet the credit policy. Status:Fully Paid',
+    'Late (16-30 days)',
+    'Late (31-120 days)',
+    'In Grace Period'
 ]
 PERCENT_COLS = ['int_rate', 'revol_util']
 TERM = 'term'
@@ -47,6 +50,7 @@ def import_data(year, nrows=None):
     df_feats['months_since_fst_credit'] = (credit_delta / np.timedelta64(1, 'M')).astype(int)
     df_feats['fico'] = (df_feats['fico_range_high'] + df_feats['fico_range_low']) / 2
     df_feats['payout_prop'] = (df_feats['total_pymnt'] - df_feats['collection_recovery_fee']) / df_feats['loan_amnt']
+    df_feats['income_to_pymnt'] = (df_feats['annual_inc'] / 12) / df_feats['installment']
     
     # Filter out currents
     df_feats=  df_feats[df_feats['loan_status'] != 'Does not meet the credit policy. Status:Charged Off']
